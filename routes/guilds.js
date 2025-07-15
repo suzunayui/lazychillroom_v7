@@ -149,13 +149,14 @@ router.get('/:guildId', async (req, res) => {
       SELECT 
         u.id,
         u.username,
+        u.nickname,
         u.avatar_url,
         gm.role,
         gm.joined_at
       FROM users u
       JOIN guild_members gm ON u.id = gm.user_id
       WHERE gm.guild_id = ? AND gm.is_active = 1
-      ORDER BY gm.role DESC, u.username ASC
+      ORDER BY gm.role DESC, u.nickname ASC
     `, [guildId]);
 
     res.json({

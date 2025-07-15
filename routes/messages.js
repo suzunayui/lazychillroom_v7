@@ -90,9 +90,10 @@ router.get('/', async (req, res) => {
 
     // Get user info and format file info for each message
     for (let message of messages) {
-      const userInfo = await query('SELECT username, avatar_url FROM users WHERE id = ?', [message.user_id]);
+      const userInfo = await query('SELECT username, nickname, avatar_url FROM users WHERE id = ?', [message.user_id]);
       if (userInfo.length > 0) {
         message.username = userInfo[0].username;
+        message.nickname = userInfo[0].nickname;
         message.avatar_url = userInfo[0].avatar_url;
       }
       
@@ -190,9 +191,11 @@ router.post('/', async (req, res) => {
         m.created_at,
         m.updated_at,
         u.username,
+        u.nickname,
         u.avatar_url,
         rm.content as reply_content,
-        ru.username as reply_username
+        ru.username as reply_username,
+        ru.nickname as reply_nickname
       FROM messages m
       JOIN users u ON m.user_id = u.id
       LEFT JOIN messages rm ON m.reply_to = rm.id

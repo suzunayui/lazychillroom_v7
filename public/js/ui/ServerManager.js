@@ -140,8 +140,6 @@ class ServerManager {
         
         modal.innerHTML = `
             <div class="server-create-content">
-                <button class="server-create-close" onclick="this.closest('.server-create-modal').remove()">&times;</button>
-                
                 <div class="server-create-header">
                     <h2 class="server-create-title">サーバーを作成</h2>
                     <p class="server-create-subtitle">サーバーは、あなたとお友達がハングアウトする場所です。自分のサーバーを作成して、話し始めましょう。</p>
@@ -178,7 +176,7 @@ class ServerManager {
                 </div>
                 
                 <div class="server-create-footer">
-                    <button type="button" class="btn-cancel" onclick="this.closest('.server-create-modal').remove()">戻る</button>
+                    <button type="button" class="btn-cancel" id="cancelServerBtn">戻る</button>
                     <button type="button" class="btn-create" id="createServerBtn">作成</button>
                 </div>
             </div>
@@ -235,6 +233,14 @@ class ServerManager {
         createBtn.addEventListener('click', () => {
             this.handleServerCreate();
         });
+        
+        // 戻るボタン
+        const cancelBtn = document.getElementById('cancelServerBtn');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                modal.remove();
+            });
+        }
         
         // Enterキーでの送信
         serverNameInput.addEventListener('keypress', (e) => {
@@ -623,8 +629,6 @@ class ServerManager {
         
         modal.innerHTML = `
             <div class="server-create-content">
-                <button class="server-create-close" onclick="this.closest('.server-create-modal').remove()">&times;</button>
-                
                 <div class="server-create-header">
                     <h2 class="server-create-title">サーバー設定</h2>
                     <p class="server-create-subtitle">サーバーの設定を変更できます。</p>
@@ -662,7 +666,7 @@ class ServerManager {
                 </div>
                 
                 <div class="server-create-footer">
-                    <button type="button" class="btn-cancel" onclick="this.closest('.server-create-modal').remove()">キャンセル</button>
+                    <button type="button" class="btn-cancel" id="cancelServerSettingsBtn">キャンセル</button>
                     <button type="button" class="btn-create" id="updateServerIconBtn">更新</button>
                 </div>
             </div>
@@ -703,6 +707,15 @@ class ServerManager {
         const updateBtn = document.getElementById('updateServerIconBtn');
         const inviteManagerBtn = document.getElementById('inviteManagerBtn');
         const roleManagerBtn = document.getElementById('roleManagerBtn');
+        const cancelBtn = document.getElementById('cancelServerSettingsBtn');
+        const modal = document.getElementById('serverSettingsModal');
+        
+        // キャンセルボタン
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                modal.remove();
+            });
+        }
         
         // 招待リンク管理ボタン
         inviteManagerBtn.addEventListener('click', () => {

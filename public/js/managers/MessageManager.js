@@ -363,7 +363,7 @@ class MessageManager {
                 </div>
                 <div class="message-content">
                     <div class="message-header">
-                        <span class="message-author">${message.username}</span>
+                        <span class="message-author">${message.nickname || message.username}</span>
                         <span class="message-timestamp">${timestamp}</span>
                         ${editedMark}
                         ${deleteButton}
@@ -391,7 +391,7 @@ class MessageManager {
         // まず、メッセージにアバターURL情報がある場合はそれを使用
         if (message.avatar_url) {
             console.log('✓ Using message avatar_url:', message.avatar_url);
-            return `<img src="${message.avatar_url}?t=${Date.now()}" alt="${message.username}" class="avatar-img">`;
+            return `<img src="${message.avatar_url}?t=${Date.now()}" alt="${message.nickname || message.username}" class="avatar-img">`;
         }
         
         // メッセージにアバターがない場合で、自分のメッセージなら自分のアバターを使用
@@ -399,12 +399,12 @@ class MessageManager {
             String(message.user_id) === String(currentUser.id) && 
             currentUser.avatar_url) {
             console.log('✓ Using current user avatar for own message (fallback)');
-            return `<img src="${currentUser.avatar_url}?t=${Date.now()}" alt="${message.username}" class="avatar-img">`;
+            return `<img src="${currentUser.avatar_url}?t=${Date.now()}" alt="${message.nickname || message.username}" class="avatar-img">`;
         }
         
         // デフォルトは文字のプレースホルダー
-        console.log('⚠️ Using text placeholder for:', message.username);
-        return message.username.charAt(0).toUpperCase();
+        console.log('⚠️ Using text placeholder for:', message.nickname || message.username);
+        return (message.nickname || message.username).charAt(0).toUpperCase();
     }
 
     formatMessageContent(content) {

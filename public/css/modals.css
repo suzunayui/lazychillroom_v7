@@ -430,29 +430,6 @@
     margin: 0 auto;
 }
 
-.server-create-close {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    background: none;
-    border: none;
-    color: #b9bbbe;
-    font-size: 24px;
-    cursor: pointer;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: background-color 0.15s ease;
-}
-
-.server-create-close:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #dcddde;
-}
-
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }

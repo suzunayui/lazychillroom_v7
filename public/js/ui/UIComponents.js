@@ -31,11 +31,11 @@ class UIComponents {
                             <div class="user-avatar">
                                 ${currentUser.avatar_url ? 
                                     `<img src="${currentUser.avatar_url}" alt="アバター" class="user-avatar-img">` : 
-                                    `<span>${currentUser.username.charAt(0).toUpperCase()}</span>`
+                                    `<span>${(currentUser.nickname || currentUser.username).charAt(0).toUpperCase()}</span>`
                                 }
                             </div>
                             <div class="user-details">
-                                <div class="username clickable-username" id="usernameBtn" title="マイサーバーを開く">${currentUser.username}</div>
+                                <div class="username clickable-username" id="usernameBtn" title="マイサーバーを開く">${currentUser.nickname || currentUser.username}</div>
                                 <div class="user-status">オンライン</div>
                                 <button class="my-server-btn" id="myServerBtn" title="マイサーバー">🏠 マイサーバー</button>
                             </div>
@@ -179,11 +179,11 @@ class UIComponents {
         messageElement.className = 'message';
         messageElement.innerHTML = `
             <div class="message-avatar">
-                <span>${currentUser.username.charAt(0).toUpperCase()}</span>
+                <span>${(currentUser.nickname || currentUser.username).charAt(0).toUpperCase()}</span>
             </div>
             <div class="message-content">
                 <div class="message-header">
-                    <span class="message-author">${currentUser.username}</span>
+                    <span class="message-author">${currentUser.nickname || currentUser.username}</span>
                     <span class="message-timestamp">${TimeUtils.getCurrentJSTTime()}</span>
                 </div>
                 <div class="message-text">${content}</div>
@@ -333,8 +333,8 @@ class UIComponents {
             if (participant) {
                 html += `
                     <div class="dm-user-item" data-dm="${dm.id}">
-                        <div class="dm-avatar">${participant.username.charAt(0).toUpperCase()}</div>
-                        <span class="dm-name">${participant.username}</span>
+                        <div class="dm-avatar">${(participant.nickname || participant.username).charAt(0).toUpperCase()}</div>
+                        <span class="dm-name">${participant.nickname || participant.username}</span>
                         <div class="dm-status online"></div>
                     </div>
                 `;
@@ -373,22 +373,22 @@ class UIComponents {
             if (currentUser && currentUser.id && memberId == currentUser.id && currentUser.avatar_url) {
                 // 自分のメンバー表示の場合はlocalStorageから取得
                 console.log('✓ Using current user avatar from localStorage');
-                avatarContent = `<img src="${currentUser.avatar_url}?t=${Date.now()}" alt="${member.username}" class="member-avatar-img">`;
+                avatarContent = `<img src="${currentUser.avatar_url}?t=${Date.now()}" alt="${currentUser.nickname || currentUser.username}" class="member-avatar-img">`;
             } else if (member.avatar_url) {
                 // メンバーデータにアバターURL情報がある場合
                 console.log('✓ Using member avatar_url:', member.avatar_url);
-                avatarContent = `<img src="${member.avatar_url}?t=${Date.now()}" alt="${member.username}" class="member-avatar-img">`;
+                avatarContent = `<img src="${member.avatar_url}?t=${Date.now()}" alt="${member.nickname || member.username}" class="member-avatar-img">`;
             } else {
                 // デフォルトは文字のプレースホルダー
                 console.log('⚠️ No avatar found, using text placeholder');
-                avatarContent = member.username.charAt(0).toUpperCase();
+                avatarContent = (member.nickname || member.username).charAt(0).toUpperCase();
             }
             
             return `
                 <div class="member-item">
                     <div class="member-avatar">${avatarContent}</div>
                     <div class="member-info">
-                        <span class="member-name">${member.username}</span>
+                        <span class="member-name">${member.nickname || member.username}</span>
                         <span class="member-activity">${type === 'online' ? (member.activity || 'LazyChillRoomを使用中') : (member.lastSeen || '最終ログイン: 不明')}</span>
                     </div>
                     <div class="member-status ${type}"></div>
