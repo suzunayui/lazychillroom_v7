@@ -1,0 +1,50 @@
+{
+  "name": "lazychillroom-node",
+  "version": "1.0.0",
+  "description": "Discord-like chat application built with Node.js",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "npx nodemon server.js",
+    "migrate": "node migrations/initDatabase.js",
+    "update-channels": "node migrations/update_default_channels.js",
+    "up": "podman-compose -f podman-compose.yaml up -d",
+    "down": "podman-compose -f podman-compose.yaml down",
+    "down-v": "podman-compose -f podman-compose.yaml down -v",
+    "build": "podman-compose -f podman-compose.yaml build",
+    "logs": "podman-compose -f podman-compose.yaml logs -f",
+    "db:up": "podman-compose -f podman-compose.yaml up -d mysql",
+    "setup": "npm install && npm run db:up && sleep 10 && npm run migrate",
+    "all": "npm run down-v && npm run build && npm run up && sleep 10 && npm run migrate && npm run dev"
+  },
+  "keywords": [
+    "chat",
+    "discord",
+    "realtime",
+    "websocket",
+    "node"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
+    "joi": "^17.11.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.6.5",
+    "socket.io": "^4.7.4",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  }
+}

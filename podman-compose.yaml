@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  node-app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=lazychillroom
+      - DB_USER=lazychillroom_user
+      - DB_PASSWORD=lazychillroom_password
+      - JWT_SECRET=LazyChillRoom2025SecureJWTKey_NodeJS_Version
+    volumes:
+      - ./uploads:/app/uploads
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    command: npm run dev
+
+  mysql:
+    image: docker.io/library/mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: lazychillroom
+      MYSQL_USER: lazychillroom_user
+      MYSQL_PASSWORD: lazychillroom_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    restart: unless-stopped
+
+  phpmyadmin:
+    image: docker.io/phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: root
+      PMA_PASSWORD: rootpassword
+    ports:
+      - "8081:80"
+    depends_on:
+      - mysql
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
