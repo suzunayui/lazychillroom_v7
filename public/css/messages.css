@@ -586,3 +586,50 @@
 .message:hover .message-delete-btn:hover {
     opacity: 1;
 }
+
+/* メッセージ内リンクスタイル */
+.message-text .message-link {
+    color: #00aff4; /* Discordライクな青色 */
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    position: relative;
+    border-radius: 3px;
+    padding: 0 2px;
+}
+
+.message-text .message-link:hover {
+    color: #4fc3f7;
+    background-color: rgba(0, 175, 244, 0.1);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.message-text .message-link:active {
+    color: #0288d1;
+    background-color: rgba(0, 175, 244, 0.2);
+}
+
+/* リンクのフォーカス状態 */
+.message-text .message-link:focus {
+    outline: 2px solid #00aff4;
+    outline-offset: 2px;
+    border-radius: 3px;
+}
+
+/* 長いURLの省略表示 */
+.message-text .message-link {
+    max-width: 400px;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+}
+
+/* モバイル対応 */
+@media (max-width: 768px) {
+    .message-text .message-link {
+        max-width: 200px;
+    }
+}

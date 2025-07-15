@@ -415,7 +415,7 @@ class MessageManager {
         
         // URLをリンクに変換
         const urlRegex = /(https?:\/\/[^\s]+)/g;
-        content = content.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+        content = content.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" class="message-link">$1</a>');
         
         // 改行を<br>に変換
         content = content.replace(/\n/g, '<br>');
