@@ -7,6 +7,7 @@
     "start": "node server.js",
     "dev": "npx nodemon server.js",
     "migrate": "node migrations/initDatabase.js",
+    "reset": "node migrations/resetDatabase.js",
     "update-channels": "node migrations/update_default_channels.js",
     "up": "podman-compose -f podman-compose.yaml up -d",
     "down": "podman-compose -f podman-compose.yaml down",
@@ -15,7 +16,8 @@
     "logs": "podman-compose -f podman-compose.yaml logs -f",
     "db:up": "podman-compose -f podman-compose.yaml up -d mysql",
     "setup": "npm install && npm run db:up && sleep 10 && npm run migrate",
-    "all": "npm run down-v && npm run build && npm run up && sleep 10 && npm run migrate"
+    "all": "npm run down-v && npm run build && npm run up && sleep 10 && npm run migrate",
+    "fresh": "npm run reset && echo '🎉 データベースをリセットしました。次に登録するユーザーが管理者になります。'"
   },
   "keywords": [
     "chat",

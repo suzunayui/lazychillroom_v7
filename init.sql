@@ -145,25 +145,6 @@ CREATE TABLE IF NOT EXISTS friends (
     INDEX idx_status (status)
 );
 
--- Insert default admin user (password: admin123)
-INSERT INTO users (username, nickname, password_hash) VALUES 
-('admin', '管理者', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewTJwJj7XWyNOvju')
-ON DUPLICATE KEY UPDATE username=username;
+-- No initial users - first registered user will become admin
 
--- Create default guild
-INSERT INTO guilds (name, description, owner_id, is_public) VALUES 
-('LazyChillRoom 公式', 'LazyChillRoomの公式サーバーです', 1, TRUE)
-ON DUPLICATE KEY UPDATE name=name;
-
--- Add admin to the guild
-INSERT INTO guild_members (guild_id, user_id, role) VALUES 
-(1, 1, 'owner')
-ON DUPLICATE KEY UPDATE role=role;
-
--- Create default channels
-INSERT INTO channels (guild_id, name, type, position) VALUES 
-(1, '一般', 'text', 0),
-(1, '雑談', 'text', 1),
-(1, '技術', 'text', 2),
-(1, '画像', 'text', 3)
-ON DUPLICATE KEY UPDATE name=VALUES(name), position=VALUES(position), type=VALUES(type);
+-- Default guild will be created when first user registers

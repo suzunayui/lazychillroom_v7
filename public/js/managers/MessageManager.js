@@ -145,8 +145,19 @@ class MessageManager {
         console.log('🗑️ メッセージ削除開始:', messageId);
         
         // 削除確認ダイアログを表示
-        const shouldDelete = await window.notificationManager?.confirm('このメッセージを削除しますか？この操作は取り消せません。') 
-            || confirm('このメッセージを削除しますか？この操作は取り消せません。'); // フォールバック
+        let shouldDelete = false;
+        
+        if (window.notificationManager && typeof window.notificationManager.confirm === 'function') {
+            // カスタム確認ダイアログを使用
+            console.log('🗑️ カスタム確認ダイアログを使用');
+            shouldDelete = await window.notificationManager.confirm('このメッセージを削除しますか？この操作は取り消せません。');
+            console.log('🗑️ カスタムダイアログの結果:', shouldDelete);
+        } else {
+            // フォールバック: ブラウザの標準confirm
+            console.log('🗑️ 標準confirmダイアログを使用');
+            shouldDelete = confirm('このメッセージを削除しますか？この操作は取り消せません。');
+            console.log('🗑️ 標準ダイアログの結果:', shouldDelete);
+        }
         
         if (!shouldDelete) {
             console.log('🗑️ メッセージ削除がキャンセルされました');
@@ -600,8 +611,8 @@ class MessageManager {
 
         // 管理者の場合はピン留め機能を追加
         const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        // 簡易的な管理者判定（実際のアプリではより厳密な権限チェックが必要）
-        const isAdmin = true; // TODO: 実際の権限を確認
+        // 実際の権限を確認（最初のユーザー（ID=1）またはギルドオーナーの場合）
+        const isAdmin = currentUser.id === 1 || isOwnMessage; // 暫定的な判定
         if (isAdmin) {
             menuHTML += `
                 <div class="context-menu-separator"></div>

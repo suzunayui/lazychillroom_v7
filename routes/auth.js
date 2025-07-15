@@ -60,6 +60,10 @@ router.post('/register', async (req, res) => {
 
     // Use transaction to create user, personal server, and add to default guild
     const newUserId = await transaction(async (connection) => {
+      // Check if this is the first user
+      const [userCountResult] = await connection.execute('SELECT COUNT(*) as count FROM users');
+      const isFirstUser = userCountResult[0].count === 0;
+
       // Create user
       const [userResult] = await connection.execute(
         'INSERT INTO users (username, nickname, password_hash, created_at) VALUES (?, ?, ?, NOW())',
@@ -67,6 +71,40 @@ router.post('/register', async (req, res) => {
       );
 
       const userId_new = userResult.insertId;
+
+      // If this is the first user, create the default public guild
+      let defaultGuildId = null;
+      if (isFirstUser) {
+        const [defaultGuildResult] = await connection.execute(
+          'INSERT INTO guilds (name, description, owner_id, is_public, created_at) VALUES (?, ?, ?, ?, NOW())',
+          ['LazyChillRoom 公式', 'LazyChillRoomの公式サーバーです', userId_new, true]
+        );
+        
+        defaultGuildId = defaultGuildResult.insertId;
+
+        // Add first user as owner of default guild
+        await connection.execute(
+          'INSERT INTO guild_members (guild_id, user_id, role, joined_at) VALUES (?, ?, ?, NOW())',
+          [defaultGuildId, userId_new, 'owner']
+        );
+
+        // Create default channels for public guild
+        const publicChannels = [
+          { name: '一般', type: 'text', position: 0 },
+          { name: '雑談', type: 'text', position: 1 },
+          { name: '技術', type: 'text', position: 2 },
+          { name: '画像', type: 'text', position: 3 }
+        ];
+
+        for (const channel of publicChannels) {
+          await connection.execute(
+            'INSERT INTO channels (guild_id, name, type, position, created_at) VALUES (?, ?, ?, ?, NOW())',
+            [defaultGuildId, channel.name, channel.type, channel.position]
+          );
+        }
+
+        console.log(`最初のユーザー ${userId} がデフォルトギルド (ID: ${defaultGuildId}) のオーナーとなりました`);
+      }
 
       // Create personal server (マイサーバー)
       const [personalServerResult] = await connection.execute(
@@ -96,18 +134,31 @@ router.post('/register', async (req, res) => {
         );
       }
 
-      // Add user to default guild (LazyChillRoom 公式)
-      try {
-        await connection.execute(
-          'INSERT INTO guild_members (guild_id, user_id, role, joined_at) VALUES (?, ?, ?, NOW())',
-          [1, userId_new, 'member']
-        );
-      } catch (guildError) {
-        console.error('デフォルトギルドへの追加に失敗:', guildError);
-        // デフォルトギルドが存在しない場合はスキップ
+      // Add user to default guild if it exists and user is not the first user
+      if (!isFirstUser) {
+        try {
+          // Find the default public guild (should be the first one created)
+          const [defaultGuildQuery] = await connection.execute(
+            'SELECT id FROM guilds WHERE is_public = TRUE ORDER BY id ASC LIMIT 1'
+          );
+          
+          if (defaultGuildQuery.length > 0) {
+            const defaultGuildId = defaultGuildQuery[0].id;
+            await connection.execute(
+              'INSERT INTO guild_members (guild_id, user_id, role, joined_at) VALUES (?, ?, ?, NOW())',
+              [defaultGuildId, userId_new, 'member']
+            );
+          }
+        } catch (guildError) {
+          console.error('デフォルトギルドへの追加に失敗:', guildError);
+          // デフォルトギルドが存在しない場合はスキップ
+        }
       }
 
       console.log(`新規ユーザー ${userId} (ID: ${userId_new}) とマイサーバー (ID: ${personalServerId}) を作成しました`);
+      if (isFirstUser) {
+        console.log(`${userId} が最初のユーザーとして管理者権限を取得しました`);
+      }
       
       return userId_new;
     });

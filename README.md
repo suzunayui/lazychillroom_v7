@@ -85,7 +85,21 @@
    npm run dev
    ```
 
-## 📁 プロジェクト構造
+## � データベースリセット
+
+初期状態に戻したい場合や、最初のユーザーを管理者にしたい場合：
+
+```bash
+# データベースをリセット（全データ削除）
+npm run reset
+
+# または便利なリセットコマンド
+npm run fresh
+```
+
+**重要**: リセット後、最初に登録したユーザーが自動的に管理者権限を取得し、デフォルトの「LazyChillRoom 公式」サーバーのオーナーになります。
+
+## �📁 プロジェクト構造
 
 ```
 lazychillroom_v7/
@@ -115,6 +129,7 @@ lazychillroom_v7/
 │   └── socketHandler.js   # Socket.io ハンドラー
 ├── migrations/
 │   ├── initDatabase.js    # データベース初期化
+│   ├── resetDatabase.js   # データベースリセット
 │   ├── add_last_activity.js # 最終活動時刻追加
 │   └── update_default_channels.js # デフォルトチャンネル更新
 ├── public/                # 静的ファイル
