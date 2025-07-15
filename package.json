@@ -15,7 +15,7 @@
     "logs": "podman-compose -f podman-compose.yaml logs -f",
     "db:up": "podman-compose -f podman-compose.yaml up -d mysql",
     "setup": "npm install && npm run db:up && sleep 10 && npm run migrate",
-    "all": "npm run down-v && npm run build && npm run up && sleep 10 && npm run migrate && npm run dev"
+    "all": "npm run down-v && npm run build && npm run up && sleep 10 && npm run migrate"
   },
   "keywords": [
     "chat",

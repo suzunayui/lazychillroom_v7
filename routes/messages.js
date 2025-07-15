@@ -50,7 +50,7 @@ router.get('/', async (req, res) => {
       });
     }
 
-    // Build simple query for messages first (for debugging)
+    // Build query for messages with file information
     let sql = `
       SELECT 
         m.id,
@@ -59,8 +59,17 @@ router.get('/', async (req, res) => {
         m.user_id,
         m.reply_to,
         m.created_at,
-        m.updated_at
+        m.updated_at,
+        f.id as file_id,
+        f.original_name as file_name,
+        f.filename,
+        f.file_size,
+        f.mime_type,
+        f.file_path
       FROM messages m
+      LEFT JOIN files f ON f.channel_id = m.channel_id 
+        AND f.uploaded_by = m.user_id
+        AND ABS(TIMESTAMPDIFF(SECOND, f.created_at, m.created_at)) <= 2
       WHERE m.channel_id = ?
     `;
 
@@ -79,12 +88,23 @@ router.get('/', async (req, res) => {
 
     const messages = await query(sql, params);
 
-    // Get user info separately for each message
+    // Get user info and format file info for each message
     for (let message of messages) {
       const userInfo = await query('SELECT username, avatar_url FROM users WHERE id = ?', [message.user_id]);
       if (userInfo.length > 0) {
         message.username = userInfo[0].username;
         message.avatar_url = userInfo[0].avatar_url;
+      }
+      
+      // Add file information if available
+      if (message.file_id) {
+        message.file_url = `/uploads/files/${message.filename}`;
+        message.file_name = message.filename;
+        message.original_name = message.file_name;
+        // Clean up the individual file fields
+        delete message.file_id;
+        delete message.filename;
+        delete message.file_path;
       }
     }
 

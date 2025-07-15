@@ -210,7 +210,14 @@ class MessageManager {
         
         // ファイル付きメッセージの判定
         const hasFile = message.file_info || message.file_url || message.file_id;
-        const isImage = hasFile && message.file_info && /^image\//.test(message.file_info.mime_type);
+        
+        // 画像判定の修正 - mime_typeを直接チェック
+        let isImage = false;
+        if (hasFile) {
+            const mimeType = message.mime_type || (message.file_info && message.file_info.mime_type);
+            isImage = mimeType && /^image\//.test(mimeType);
+        }
+        
         const isFile = hasFile && !isImage;
         
         const isUploaderChannel = currentChannel && (currentChannel.type === 'uploader_public' || currentChannel.type === 'uploader_private');
@@ -225,9 +232,8 @@ class MessageManager {
                 fileInfo: message.file_info,
                 fileUrl: message.file_url,
                 fileName: message.file_name,
-                channelType: currentChannel?.type,
-                isImage,
-                isFile
+                mimeType: message.mime_type,
+                channelType: currentChannel?.type
             });
         }
         
@@ -249,15 +255,28 @@ class MessageManager {
             const copyButtonHTML = isUploaderChannel && currentChannel.type === 'uploader_public' ? 
                 `<button class="copy-url-btn" data-url="${message.file_url}" title="URLをコピー">📋 URLをコピー</button>` : '';
             
-            // 画像URLの修正 - 相対パスの場合は絶対パスに変換
+            // 画像URLの修正 - APIパスを直接パスに変換
             let imageUrl = message.file_url;
-            if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
+            console.log('Image URL Debug:', {
+                originalUrl: imageUrl,
+                fileName: message.file_name,
+                mimeType: message.mime_type,
+                isImage: isImage
+            });
+            
+            // /api/files/xxx を実際のファイルパスに変換
+            if (imageUrl && imageUrl.startsWith('/api/files/')) {
+                // メッセージからファイル名を取得してuploadsパスを構築
+                const fileName = message.file_name || 'unknown';
+                imageUrl = `/uploads/files/${fileName}`;
+                console.log('Converted to:', imageUrl);
+            } else if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
                 imageUrl = '/' + imageUrl;
             }
             
             contentHTML = `
                 ${messageTypeIndicator}
-                <div class="message-text">${message.content}</div>
+                ${message.content ? `<div class="message-text">${message.content}</div>` : ''}
                 <div class="message-attachment">
                     <img src="${imageUrl}" 
                          alt="画像" 
@@ -280,7 +299,7 @@ class MessageManager {
             
             contentHTML = `
                 ${messageTypeIndicator}
-                <div class="message-text">${message.content}</div>
+                ${message.content ? `<div class="message-text">${message.content}</div>` : ''}
                 <div class="message-attachment">
                     <a href="${message.file_url}" target="_blank" class="file-attachment">
                         📎 ${message.file_name} (${this.formatFileSize(message.file_size)})

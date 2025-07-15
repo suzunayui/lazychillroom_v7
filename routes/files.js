@@ -103,7 +103,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       filename: req.file.filename,
       file_size: req.file.size,
       mime_type: req.file.mimetype,
-      url: `/api/files/${result.insertId}`,
+      url: `/uploads/files/${req.file.filename}`,
       uploaded_by: req.user.id,
       channel_id: parseInt(channel_id),
       created_at: new Date()
@@ -111,7 +111,13 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 
     // Create a message for the file upload
     const { content = '' } = req.body;
-    const messageContent = content || `ファイルをアップロードしました: ${req.file.originalname}`;
+    
+    // 画像ファイルの場合はデフォルトメッセージを空にする
+    let messageContent = content;
+    if (!content) {
+      const isImage = req.file.mimetype && req.file.mimetype.startsWith('image/');
+      messageContent = isImage ? '' : `ファイルをアップロードしました: ${req.file.originalname}`;
+    }
     
     const messageResult = await query(`
       INSERT INTO messages (content, channel_id, user_id, created_at)
