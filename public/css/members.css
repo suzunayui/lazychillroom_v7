@@ -4,12 +4,12 @@
 .members-sidebar {
     width: 240px;
     background-color: #2f3136;
-    display: none; /* サーバー選択時に表示される */
+    display: flex !important; /* JavaScriptによる非表示を強制上書き */
     flex-direction: column;
     min-height: 100vh;
     border-left: 1px solid #202225;
-    opacity: 0;
-    transform: translateX(100%);
+    opacity: 1 !important; /* 常に不透明 */
+    transform: translateX(0) !important; /* 常に表示位置 */
     transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
@@ -274,7 +274,7 @@
     transition: all 0.15s ease;
     width: 32px;
     height: 32px;
-    display: flex;
+    display: none !important; /* 強制的に非表示 */
     align-items: center;
     justify-content: center;
     line-height: 1;
@@ -300,5 +300,31 @@
 @media (min-width: 769px) {
     .close-members-btn {
         display: none;
+    }
+}
+
+/* 小さな画面でのメンバー情報表示最適化 */
+@media (max-width: 480px) {
+    .member-info {
+        display: none; /* スマートフォンでは名前を非表示 */
+    }
+    
+    .member-item {
+        justify-content: center; /* アバターを中央揃え */
+        padding: 6px 2px; /* パディングを縮小 */
+    }
+    
+    .member-avatar {
+        margin-right: 0; /* 右マージンを削除 */
+    }
+}
+
+@media (max-width: 320px) {
+    .member-info {
+        display: none; /* 極小画面でも名前を非表示 */
+    }
+    
+    .member-item {
+        padding: 4px 2px; /* さらにパディングを縮小 */
     }
 }

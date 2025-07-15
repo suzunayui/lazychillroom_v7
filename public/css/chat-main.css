@@ -87,10 +87,13 @@
 .chat-messages {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden; /* 横スクロールを防ぐ */
     padding: 16px;
     background-color: #36393f;
     box-sizing: border-box; /* パディングを含めた計算 */
     min-height: 0; /* フレックス子要素の最小高さを0に */
+    width: 100%; /* 幅を明示的に指定 */
+    max-width: 100%; /* 親コンテナを超えないように */
 }
 
 .welcome-message {
@@ -385,10 +388,11 @@
     display: block;
     overflow: hidden; /* はみ出し防止 */
     max-width: 100%; /* 親要素を超えないようにする */
+    width: 100%; /* 親要素の幅に合わせる */
 }
 
 .message-attachment img {
-    max-width: 400px;
+    max-width: 100%; /* 親コンテナの幅に合わせる */
     max-height: 300px;
     border-radius: 8px;
     cursor: pointer;

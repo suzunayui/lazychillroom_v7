@@ -3,6 +3,12 @@ class MessageManager {
     constructor() {
         this.apiBase = 'api';
         this.messages = new Map(); // チャンネルIDをキーとしたメッセージ配列のマップ
+        
+        // ソケットイベントリスナーを設定
+        this.setupSocketListeners();
+        
+        // 削除ボタンのイベントリスナーを設定
+        this.setupDeleteButtonListeners();
     }
 
     async loadMessages(channelId, limit = 50, before = null) {
@@ -136,27 +142,32 @@ class MessageManager {
     }
 
     async deleteMessage(messageId) {
+        console.log('🗑️ メッセージ削除開始:', messageId);
+        
         // 削除確認ダイアログを表示
         const shouldDelete = await window.notificationManager?.confirm('このメッセージを削除しますか？この操作は取り消せません。') 
             || confirm('このメッセージを削除しますか？この操作は取り消せません。'); // フォールバック
         
         if (!shouldDelete) {
+            console.log('🗑️ メッセージ削除がキャンセルされました');
             return { success: false, error: 'キャンセルされました' };
         }
         
         try {
-            const response = await fetch(`${this.apiBase}/messages`, {
+            console.log('🗑️ API呼び出し開始:', `${this.apiBase}/messages/${messageId}`);
+            
+            // 直接fetch APIを使用してメッセージを削除
+            const response = await fetch(`${this.apiBase}/messages/${messageId}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                },
-                body: JSON.stringify({
-                    message_id: messageId
-                })
+                }
             });
 
+            console.log('🗑️ レスポンス受信:', response.status);
             const data = await response.json();
+            console.log('🗑️ レスポンスデータ:', data);
             
             if (data.success) {
                 // ローカルメッセージリストから削除
@@ -191,14 +202,16 @@ class MessageManager {
                 return { success: false, error: data.message };
             }
         } catch (error) {
-            console.error('メッセージ削除エラー:', error);
+            console.error('🗑️ メッセージ削除エラー:', error);
+            console.error('🗑️ エラースタック:', error.stack);
             
             // エラー通知を表示
             if (window.notificationManager) {
                 window.notificationManager.error('ネットワークエラーが発生しました', '削除に失敗しました');
             } else {
                 window.notificationManager?.showNotification('削除に失敗しました: ネットワークエラーが発生しました', 'error') 
-                    || this.chatUI?.uiUtils?.showNotification('削除に失敗しました: ネットワークエラーが発生しました', 'error');
+                    || this.chatUI?.uiUtils?.showNotification('削除に失敗しました: ネットワークエラーが発生しました', 'error')
+                    || alert('削除に失敗しました: ネットワークエラーが発生しました'); // 最終フォールバック
             }
             
             return { success: false, error: 'ネットワークエラーが発生しました' };
@@ -321,7 +334,7 @@ class MessageManager {
         
         // 削除ボタンを作成（自分のメッセージのみ）
         const deleteButton = isOwnMessage ? 
-            '<button class="message-delete-btn" title="メッセージを削除" onclick="messageManager.deleteMessage(' + message.id + ')">🗑️</button>' : '';
+            `<button class="message-delete-btn" title="メッセージを削除" data-message-id="${message.id}">🗑️</button>` : '';
 
         // 編集済みマーカー
         const editedMark = message.created_at !== message.updated_at ? 
@@ -746,6 +759,70 @@ class MessageManager {
         if (replyIndicator) {
             replyIndicator.style.display = 'none';
         }
+    }
+
+    // ソケットイベントリスナーを設定
+    setupSocketListeners() {
+        console.log('🔌 ソケットリスナー設定開始');
+        if (window.socketManager) {
+            console.log('🔌 SocketManagerが利用可能');
+            // メッセージ削除イベントのリスナー
+            window.socketManager.on('message_deleted', (data) => {
+                console.log('ソケット経由でメッセージ削除を受信:', data);
+                this.handleMessageDeleted(data);
+            });
+        } else {
+            console.log('⚠️ SocketManagerが利用できません - 後で再試行します');
+            // SocketManagerが後で利用可能になった場合のために遅延設定
+            setTimeout(() => {
+                if (window.socketManager && !this.socketListenersSetup) {
+                    this.setupSocketListeners();
+                    this.socketListenersSetup = true;
+                }
+            }, 1000);
+        }
+    }
+
+    // メッセージ削除イベントの処理
+    handleMessageDeleted(data) {
+        const { messageId, channelId } = data;
+        
+        // ローカルメッセージリストから削除
+        if (this.messages.has(channelId)) {
+            const messages = this.messages.get(channelId);
+            const index = messages.findIndex(msg => msg.id == messageId);
+            if (index !== -1) {
+                messages.splice(index, 1);
+            }
+        }
+        
+        // DOMからメッセージ要素を削除
+        const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+        if (messageElement) {
+            messageElement.remove();
+        }
+    }
+
+    // 削除ボタンのイベントリスナーを設定
+    setupDeleteButtonListeners() {
+        // 削除ボタンのクリックイベントを委譲で処理
+        document.addEventListener('click', (event) => {
+            if (event.target.classList.contains('message-delete-btn')) {
+                console.log('🗑️ 削除ボタンがクリックされました');
+                const messageId = event.target.getAttribute('data-message-id');
+                console.log('🗑️ メッセージID:', messageId);
+                console.log('🗑️ MessageManagerインスタンス:', this);
+                
+                if (messageId) {
+                    // thisコンテキストを確実に保持
+                    this.deleteMessage(parseInt(messageId)).catch(error => {
+                        console.error('🗑️ 削除処理でエラー:', error);
+                    });
+                } else {
+                    console.error('❌ メッセージIDが見つかりません');
+                }
+            }
+        });
     }
 }
 

@@ -141,11 +141,11 @@ class UIComponents {
                     </div>
                 </div>
 
-                <!-- メンバーリスト（サーバー選択時に表示） -->
-                <div class="members-sidebar" id="membersSidebar" style="display: none;">
+                <!-- メンバーリスト（常に表示） -->
+                <div class="members-sidebar" id="membersSidebar">
                     <div class="members-header">
                         <span id="membersCount">メンバー - 4</span>
-                        <button class="close-members-btn" id="closeMembersBtn" title="メンバーリストを閉じる">×</button>
+                        <button class="close-members-btn" id="closeMembersBtn" title="メンバーリストを閉じる" style="display: none;">×</button>
                     </div>
                     <div class="members-list">
                         <!-- オンラインメンバー -->
